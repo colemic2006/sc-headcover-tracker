@@ -1,1 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scotty Cameron Headcover Market Tracker</title>
+<style>
+  :root {
+    --bg: #fafaf9;
+    --surface: #ffffff;
+    --surface2: #f4f3f0;
+    --border: #e5e3de;
+    --border2: #cccac4;
+    --text: #1a1917;
+    --text2: #6b6963;
+    --text3: #a09d97;
+    --green: #1D9E75;
+    --green-bg: #E1F5EE;
+    --red: #D85A30;
+    --red-bg: #FAECE7;
+    --blue: #185FA5;
+    --blue-bg: #E6F1FB;
+    --amber: #BA7517;
+    --amber-bg: #FAEEDA;
+    --accent: #1a1917;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #18181a;
+      --surface: #242426;
+      --surface2: #2e2e31;
+      --border: #3a3a3e;
+      --border2: #4a4a4f;
+      --text: #f0ede8;
+      --text2: #a09d97;
+      --text3: #6b6963;
+      --green-bg: #04342C;
+      --red-bg: #4A1B0C;
+      --blue-bg: #042C53;
+      --amber-bg: #412402;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.5; }
 
+  .page { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  header { margin-bottom: 2rem; }
+  header h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px; }
+  .logo { width: 28px; height: 28px; background: var(--accent); border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+  .logo svg { width: 16px; height: 16px; fill: white; }
+  header p { color: var(--text2); font-size: 14px; margin-top: 4px; }
+
+  .config-bar { background: var(--amber-bg); border: 1px solid var(--amber); border-radius: var(--radius); padding: 10px 14px; font-size: 13px; color: var(--amber); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px; }
+  .config-bar a { color: var(--amber); font-weight: 500; }
+
+  .search-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .search-row input { flex: 1; height: 40px; border: 1px solid var(--border2); border-radius: var(--radius); padding: 0 12px; font-size: 14px; background: var(--surface); color: var(--text); outline: none; transition: border-color 0.15s; }
+  .search-row input:focus { border-color: var(--text); }
+  .search-row select { height: 40px; border: 1px solid var(--border2); border-radius: var(--radius); padding: 0 10px; font-size: 14px; background: var(--surface); color: var(--text); cursor: pointer; }
+  .btn { height: 40px; padding: 0 16px; border: 1px solid var(--border2); border-radius: var(--radius); font-size: 14px; background: var(--accent); color: white; cursor: pointer; font-weight: 500; transition: opacity 0.15s; white-space: nowrap; }
+  .btn:hover { opacity: 0.85; }
+  .btn-outline { background: var(--surface); color: var(--text); }
+  .btn-outline:hover { background: var(--surface2); opacity: 1; }
+
+  .filter-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .pill { font-size: 12px; padding: 4px 12px; border: 1px solid var(--border); border-radius: 20px; cursor: pointer; background: transparent; color: var(--text2); transition: all 0.12s; }
+  .pill:hover, .pill.active { background: var(--surface2); color: var(--text); border-color: var(--border2); }
+  .pill.active { font-weight: 500; }
+
+  .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+  .tab { font-size: 14px; padding: 10px 18px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; color: var(--text2); background: none; border-top: none; border-left: none; border-right: none; transition: color 0.12s; }
+  .tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+  @media (max-width: 600px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+  .stat-card { background: var(--surface2); border-radius: var(--radius); padding: 12px 14px; }
+  .stat-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+  .stat-val { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
+  .stat-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .up { color: var(--green); }
+  .dn { color: var(--red); }
+
+  .listing { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 14px; cursor: pointer; transition: border-color 0.12s; text-decoration: none; color: inherit; }
+  .listing:hover { border-color: var(--border2); }
+  .thumb { width: 60px; height: 60px; background: var(--surface2); border-radius: var(--radius); overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .thumb-placeholder { font-size: 24px; opacity: 0.4; }
+  .listing-body { flex: 1; min-width: 0; }
+  .listing-title { font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 5px; }
+  .listing-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 12px; color: var(--text2); }
+  .listing-right { flex-shrink: 0; text-align: right; }
+  .listing-price { font-size: 19px; font-weight: 600; letter-spacing: -0.02em; }
+  .listing-price small { font-size: 12px; font-weight: 400; color: var(--text2); }
+  .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 4px; margin-top: 4px; font-weight: 500; }
+  .badge-sold { background: var(--green-bg); color: var(--green); }
+  .badge-active { background: var(--blue-bg); color: var(--blue); }
+  .badge-auction { background: var(--amber-bg); color: var(--amber); }
+  .badge-bin { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+
+  .pop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 1.5rem; }
+  @media (max-width: 600px) { .pop-grid { grid-template-columns: repeat(2, 1fr); } }
+  .pop-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px; cursor: pointer; transition: border-color 0.12s; }
+  .pop-card:hover { border-color: var(--border2); }
+  .pop-name { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .pop-price { font-size: 18px; font-weight: 600; letter-spacing: -0.02em; }
+  .pop-meta { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+  .arb-section { background: var(--green-bg); border: 1px solid var(--green); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 1rem; }
+  .arb-title { font-size: 13px; font-weight: 600; color: var(--green); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .arb-item { font-size: 13px; display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(29,158,117,0.15); }
+  .arb-item:last-child { border-bottom: none; }
+
+  .empty { text-align: center; padding: 4rem 1rem; color: var(--text3); }
+  .empty svg { width: 40px; height: 40px; opacity: 0.3; display: block; margin: 0 auto 1rem; }
+  .empty p { font-size: 14px; }
+
+  .loading { text-align: center; padding: 3rem; color: var(--text3); font-size: 14px; }
+  .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border2); border-top-color: var(--text); border-radius: 50%; animation: spin 0.7s linear infinite; margin-bottom: 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-bar { background: var(--red-bg); border: 1px solid var(--red); color: var(--red); border-radius: var(--radius); padding: 10px 14px; font-size: 13px; margin-bottom: 1rem; }
+
+  .section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; margin-top: 1.25rem; }
+
+  footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 12px; color: var(--text3); display: flex; justify-content: space-between; align-items: center; flex-wrap: gap; }
+  footer a { color: var(--text2); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1>
+      <div class="logo">
+        <svg viewBox="0 0 16 16"><path d="M8 2C5.2 2 3 4.2 3 7c0 2.8 5 9 5 9s5-6.2 5-9c0-2.8-2.2-5-5-5zm0 7c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>
+      </div>
+      Scotty Cameron Headcover Tracker
+    </h1>
+    <p>Secondary market prices, sold history, and market analysis powered by eBay</p>
+  </header>
+
+  <div id="config-notice" class="config-bar" style="display:none">
+    &#9888; Worker URL not configured. Edit <code>WORKER_URL</code> in this file to connect to your Cloudflare Worker.
+    <a href="https://github.com/colemic2006/sc-headcover-tracker#setup" target="_blank">Setup guide</a>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="setTab('market')">Market Overview</button>
+    <button class="tab" onclick="setTab('sold')">Sold History</button>
+    <button class="tab" onclick="setTab('active')">Active Listings</button>
+    <button class="tab" onclick="setTab('popular')">Popular Models</button>
+  </div>
+
+  <!-- MARKET TAB -->
+  <div id="tab-market">
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card"><div class="stat-label">Avg sold price</div><div class="stat-val" id="s-avg">—</div><div class="stat-sub" id="s-avg-sub">—</div></div>
+      <div class="stat-card"><div class="stat-label">Median sold</div><div class="stat-val" id="s-med">—</div><div class="stat-sub">last 30 days</div></div>
+      <div class="stat-card"><div class="stat-label">Active listings</div><div class="stat-val" id="s-active">—</div><div class="stat-sub" id="s-active-sub">—</div></div>
+      <div class="stat-card"><div class="stat-label">Sell-through rate</div><div class="stat-val" id="s-str">—</div><div class="stat-sub">sold vs. listed</div></div>
+    </div>
+
+    <div class="search-row">
+      <input type="text" id="q" placeholder='Search: "Circle T", "Ltd Release", "Garage Sale", "Tour Only"...' />
+      <select id="sort">
+        <option value="best_match">Best Match</option>
+        <option value="price_desc">Price: High to Low</option>
+        <option value="price_asc">Price: Low to High</option>
+        <option value="recent">Most Recent</option>
+      </select>
+      <button class="btn" onclick="search()">Search</button>
+    </div>
+
+    <div class="filter-row">
+      <button class="pill active" onclick="filterClick(this,'')">All</button>
+      <button class="pill" onclick="filterClick(this,'Circle T')">Circle T</button>
+      <button class="pill" onclick="filterClick(this,'Ltd Release')">Ltd Release</button>
+      <button class="pill" onclick="filterClick(this,'Special Select')">Special Select</button>
+      <button class="pill" onclick="filterClick(this,'Tour Only')">Tour Only</button>
+      <button class="pill" onclick="filterClick(this,'Gallery')">Gallery</button>
+      <button class="pill" onclick="filterClick(this,'Garage Sale')">Garage Sale</button>
+      <button class="pill" onclick="filterClick(this,'Jackpot Johnny')">Jackpot Johnny</button>
+      <button class="pill" onclick="filterClick(this,'Prototype')">Prototype</button>
+      <button class="pill" onclick="filterClick(this,'Phantom')">Phantom X</button>
+      <button class="pill" onclick="filterClick(this,'Newport')">Newport</button>
+    </div>
+
+    <div id="arb-section" style="display:none" class="arb-section">
+      <div class="arb-title">&#9654; Below-market listings detected</div>
+      <div id="arb-items"></div>
+    </div>
+
+    <div id="market-results">
+      <div class="empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <p>Search for a headcover or select a filter above to load market data.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOLD TAB -->
+  <div id="tab-sold" style="display:none">
+    <div class="search-row">
+      <input type="text" id="q-sold" placeholder="Filter sold listings..." />
+      <button class="btn" onclick="searchSold()">Search</button>
+    </div>
+    <div id="sold-results"><div class="loading"><div class="spinner"></div><p>Loading sold history...</p></div></div>
+  </div>
+
+  <!-- ACTIVE TAB -->
+  <div id="tab-active" style="display:none">
+    <div class="search-row">
+      <input type="text" id="q-active" placeholder="Filter active listings..." />
+      <select id="sort-active">
+        <option value="best_match">Best Match</option>
+        <option value="price_asc">Price: Low to High</option>
+        <option value="price_desc">Price: High to Low</option>
+        <option value="recent">Ending Soonest</option>
+      </select>
+      <button class="btn" onclick="searchActive()">Search</button>
+    </div>
+    <div id="active-results"><div class="loading"><div class="spinner"></div><p>Loading active listings...</p></div></div>
+  </div>
+
+  <!-- POPULAR TAB -->
+  <div id="tab-popular" style="display:none">
+    <p style="font-size:14px;color:var(--text2);margin-bottom:1rem;">Click any model to load current market data. Prices are rolling averages from recent eBay sales.</p>
+    <div class="pop-grid" id="pop-grid"></div>
+    <div id="model-detail" style="display:none">
+      <div class="section-label" id="model-detail-label">Model details</div>
+      <div id="model-detail-results"></div>
+    </div>
+  </div>
+
+  <footer>
+    <span>Data via eBay Browse API &bull; Prices in USD &bull; Not affiliated with Titleist/Acushnet</span>
+    <a href="https://github.com/colemic2006/sc-headcover-tracker" target="_blank">GitHub</a>
+  </footer>
+
+</div>
+
+<script>
+// ============================================================
+// CONFIGURATION - Update this to your deployed Worker URL
+// ============================================================
+const WORKER_URL = "https://sc-headcover-tracker.YOUR-SUBDOMAIN.workers.dev";
+// ============================================================
+
+const MODELS = [
+  { name: "Circle T",        query: "Circle T",          avgPrice: 285, note: "Tour-issued, highly collectible" },
+  { name: "Ltd Release",     query: "Ltd Release",       avgPrice: 175, note: "Gallery & limited runs" },
+  { name: "Special Select",  query: "Special Select",    avgPrice:  95, note: "Current production line" },
+  { name: "Tour Only",       query: "Tour Only",         avgPrice: 420, note: "Not sold at retail" },
+  { name: "Garage Sale",     query: "Garage Sale",       avgPrice: 145, note: "Annual event exclusives" },
+  { name: "Jackpot Johnny",  query: "Jackpot Johnny",    avgPrice: 320, note: "Beloved mascot series" },
+  { name: "Phantom X",       query: "Phantom X",         avgPrice:  65, note: "High-volume, steady demand" },
+  { name: "Newport / Newport 2", query: "Newport headcover", avgPrice: 72, note: "Classic blade cover" },
+  { name: "Futura",          query: "Futura headcover",  avgPrice:  58, note: "Mallet style" },
+  { name: "Prototype",       query: "Prototype",         avgPrice: 490, note: "Rare tour prototypes" },
+  { name: "Gallery Release", query: "Gallery",           avgPrice: 210, note: "Gallery-only drops" },
+  { name: "Cameron & Crown", query: "Cameron Crown",     avgPrice: 135, note: "Sub-brand headcovers" },
+];
+
+let currentTab = "market";
+let currentFilter = "";
+
+function fmt(n) {
+  if (n == null) return "—";
+  return "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
+async function api(path) {
+  const url = WORKER_URL.replace(/\/$/, "") + path;
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  return resp.json();
+}
+
+function badgeHtml(type) {
+  if (type === "sold") return '<span class="badge badge-sold">Sold</span>';
+  if (type === "auction") return '<span class="badge badge-auction">Auction</span>';
+  if (type === "bin") return '<span class="badge badge-bin">Buy It Now</span>';
+  return '<span class="badge badge-active">Active</span>';
+}
+
+function listingHtml(item) {
+  const imgHtml = item.imageUrl
+    ? `<img src="${item.imageUrl}" alt="headcover" loading="lazy" onerror="this.parentNode.innerHTML='<span class=thumb-placeholder>&#9968;</span>'">`
+    : '<span class="thumb-placeholder">&#9968;</span>';
+  const shipping = item.shippingCost === 0 ? "Free shipping" : item.shippingCost ? `+${fmt(item.shippingCost)} ship` : "";
+  const date = item.endDate ? new Date(item.endDate).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
+  const cond = item.condition || "";
+  return `<a class="listing" href="${item.url}" target="_blank" rel="noopener">
+    <div class="thumb">${imgHtml}</div>
+    <div class="listing-body">
+      <div class="listing-title">${item.title}</div>
+      <div class="listing-meta">
+        ${date ? `<span>${date}</span>` : ""}
+        ${cond ? `<span>${cond}</span>` : ""}
+        ${shipping ? `<span>${shipping}</span>` : ""}
+        ${item.bids ? `<span>${item.bids} bids</span>` : ""}
+      </div>
+    </div>
+    <div class="listing-right">
+      <div class="listing-price">${fmt(item.price)}</div>
+      ${badgeHtml(item.type)}
+    </div>
+  </a>`;
+}
+
+function showError(containerId, msg) {
+  document.getElementById(containerId).innerHTML = `<div class="error-bar">Error: ${msg}. Check your Worker URL configuration.</div>`;
+}
+
+function showLoading(containerId) {
+  document.getElementById(containerId).innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading listings...</p></div>';
+}
+
+function showEmpty(containerId, msg = "No listings found.") {
+  document.getElementById(containerId).innerHTML = `<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><p>${msg}</p></div>`;
+}
+
+async function search() {
+  const q = (document.getElementById("q").value.trim() + " " + currentFilter).trim();
+  const sort = document.getElementById("sort").value;
+  showLoading("market-results");
+
+  // Reset stats
+  ["s-avg","s-med","s-active","s-str"].forEach(id => document.getElementById(id).textContent = "...");
+
+  try {
+    const [stats, results] = await Promise.all([
+      api(`/stats?q=${encodeURIComponent(q)}`),
+      api(`/search?q=${encodeURIComponent(q)}&sort=${sort}&type=all&limit=30`),
+    ]);
+
+    // Update stats
+    document.getElementById("s-avg").textContent = stats.sold?.stats ? fmt(stats.sold.stats.avg) : "—";
+    document.getElementById("s-avg-sub").textContent = stats.sold?.stats ? `${stats.sold.stats.count} sold` : "—";
+    document.getElementById("s-med").textContent = stats.sold?.stats ? fmt(stats.sold.stats.median) : "—";
+    document.getElementById("s-active").textContent = stats.active?.total ?? "—";
+    document.getElementById("s-active-sub").textContent = "BIN + auction";
+    document.getElementById("s-str").textContent = stats.sellThrough != null ? stats.sellThrough + "%" : "—";
+
+    // Arbitrage
+    const arb = stats.arbitrage || [];
+    if (arb.length) {
+      document.getElementById("arb-section").style.display = "block";
+      document.getElementById("arb-items").innerHTML = arb.map(item =>
+        `<div class="arb-item"><span>${item.title.substring(0, 60)}...</span><span class="up">${fmt(item.price)}</span></div>`
+      ).join("");
+    } else {
+      document.getElementById("arb-section").style.display = "none";
+    }
+
+    // Listings
+    const items = results.items || [];
+    if (!items.length) { showEmpty("market-results"); return; }
+    document.getElementById("market-results").innerHTML =
+      `<div class="section-label">${results.total} listings found</div>` +
+      items.map(listingHtml).join("");
+
+  } catch (err) {
+    showError("market-results", err.message);
+  }
+}
+
+async function searchSold() {
+  const q = document.getElementById("q-sold").value.trim() || "Scotty Cameron headcover";
+  showLoading("sold-results");
+  try {
+    const data = await api(`/search?q=${encodeURIComponent(q)}&type=sold&sort=recent&limit=30`);
+    const items = data.items || [];
+    if (!items.length) { showEmpty("sold-results"); return; }
+    document.getElementById("sold-results").innerHTML =
+      `<div class="section-label">${data.total} sold listings</div>` +
+      `<div class="stat-card" style="margin-bottom:1rem;display:flex;gap:2rem;background:var(--surface2);border-radius:var(--radius);padding:12px 14px">
+        <span><span style="font-size:12px;color:var(--text2);display:block">Avg sold</span><b>${data.stats ? fmt(data.stats.avg) : "—"}</b></span>
+        <span><span style="font-size:12px;color:var(--text2);display:block">Median</span><b>${data.stats ? fmt(data.stats.median) : "—"}</b></span>
+        <span><span style="font-size:12px;color:var(--text2);display:block">Range</span><b>${data.stats ? fmt(data.stats.min) + " – " + fmt(data.stats.max) : "—"}</b></span>
+      </div>` +
+      items.map(listingHtml).join("");
+  } catch (err) {
+    showError("sold-results", err.message);
+  }
+}
+
+async function searchActive() {
+  const q = document.getElementById("q-active").value.trim() || "Scotty Cameron headcover";
+  const sort = document.getElementById("sort-active").value;
+  showLoading("active-results");
+  try {
+    const data = await api(`/search?q=${encodeURIComponent(q)}&type=active&sort=${sort}&limit=30`);
+    const items = data.items || [];
+    if (!items.length) { showEmpty("active-results"); return; }
+    document.getElementById("active-results").innerHTML =
+      `<div class="section-label">${data.total} active listings</div>` +
+      items.map(listingHtml).join("");
+  } catch (err) {
+    showError("active-results", err.message);
+  }
+}
+
+function renderPopular() {
+  document.getElementById("pop-grid").innerHTML = MODELS.map((m, i) =>
+    `<div class="pop-card" onclick="loadModel(${i})">
+      <div class="pop-name">${m.name}</div>
+      <div class="pop-price">~${fmt(m.avgPrice)}</div>
+      <div class="pop-meta">${m.note}</div>
+    </div>`
+  ).join("");
+}
+
+async function loadModel(idx) {
+  const m = MODELS[idx];
+  document.getElementById("model-detail").style.display = "block";
+  document.getElementById("model-detail-label").textContent = `${m.name} — recent market`;
+  document.getElementById("model-detail-results").innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading...</p></div>';
+  try {
+    const data = await api(`/stats?q=${encodeURIComponent(m.query)}`);
+    const soldItems = (data.sold?.items || []).slice(0, 6);
+    const stats = data.sold?.stats;
+    document.getElementById("model-detail-results").innerHTML =
+      (stats ? `<div style="display:flex;gap:1.5rem;margin-bottom:1rem;flex-wrap:wrap">
+        <span><span style="font-size:12px;color:var(--text2);display:block">Avg sold</span><b>${fmt(stats.avg)}</b></span>
+        <span><span style="font-size:12px;color:var(--text2);display:block">Median</span><b>${fmt(stats.median)}</b></span>
+        <span><span style="font-size:12px;color:var(--text2);display:block">Low / High</span><b>${fmt(stats.min)} – ${fmt(stats.max)}</b></span>
+        <span><span style="font-size:12px;color:var(--text2);display:block">Active</span><b>${data.active?.total ?? "—"}</b></span>
+        <span><span style="font-size:12px;color:var(--text2);display:block">Sell-through</span><b>${data.sellThrough != null ? data.sellThrough + "%" : "—"}</b></span>
+      </div>` : "") +
+      soldItems.map(listingHtml).join("");
+  } catch (err) {
+    document.getElementById("model-detail-results").innerHTML = `<div class="error-bar">Error: ${err.message}</div>`;
+  }
+}
+
+function setTab(tab) {
+  ["market","sold","active","popular"].forEach(t => {
+    document.getElementById(`tab-${t}`).style.display = t === tab ? "block" : "none";
+  });
+  document.querySelectorAll(".tab").forEach((el, i) => {
+    el.classList.toggle("active", ["market","sold","active","popular"][i] === tab);
+  });
+  currentTab = tab;
+  if (tab === "sold" && document.getElementById("sold-results").querySelector(".spinner")) searchSold();
+  if (tab === "active" && document.getElementById("active-results").querySelector(".spinner")) searchActive();
+}
+
+function filterClick(el, val) {
+  document.querySelectorAll(".filter-row .pill").forEach(p => p.classList.remove("active"));
+  el.classList.add("active");
+  currentFilter = val;
+  if (val) {
+    document.getElementById("q").value = val;
+    search();
+  }
+}
+
+// Check config
+document.addEventListener("DOMContentLoaded", () => {
+  renderPopular();
+  if (WORKER_URL.includes("YOUR-SUBDOMAIN")) {
+    document.getElementById("config-notice").style.display = "flex";
+  }
+});
+
+document.getElementById("q").addEventListener("keydown", e => { if (e.key === "Enter") search(); });
+document.getElementById("q-sold").addEventListener("keydown", e => { if (e.key === "Enter") searchSold(); });
+document.getElementById("q-active").addEventListener("keydown", e => { if (e.key === "Enter") searchActive(); });
+</script>
+</body>
+</html>

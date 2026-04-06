@@ -1,0 +1,15 @@
+name = "sc-headcover-tracker"
+main = "index.js"
+compatibility_date = "2024-01-01"
+
+# Secrets (set via CLI - do NOT put real values here):
+#   wrangler secret put EBAY_APP_ID
+#   wrangler secret put EBAY_CERT_ID
+
+[observability]
+enabled = true
+
+# Optional: bind a KV namespace for caching search results
+# [[kv_namespaces]]
+# binding = "CACHE"
+# id = "your-kv-namespace-id"

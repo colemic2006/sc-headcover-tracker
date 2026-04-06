@@ -164,7 +164,7 @@
     </div>
 
     <div class="search-row">
-      <input type="text" id="q" placeholder='Search: "Circle T", "Ltd Release", "Event", "Tour Only"...' />
+      <input type="text" id="q" placeholder='Search: "Circle T", "Ltd Release", "Garage Sale", "Tour Only"...' />
       <select id="sort">
         <option value="best_match">Best Match</option>
         <option value="price_desc">Price: High to Low</option>
@@ -181,10 +181,10 @@
       <button class="pill" onclick="filterClick(this,'Special Select')">Special Select</button>
       <button class="pill" onclick="filterClick(this,'Tour Only')">Tour Only</button>
       <button class="pill" onclick="filterClick(this,'Gallery')">Gallery</button>
-      <button class="pill" onclick="filterClick(this,'Event')">Event</button>
+      <button class="pill" onclick="filterClick(this,'Garage Sale')">Garage Sale</button>
       <button class="pill" onclick="filterClick(this,'Jackpot Johnny')">Jackpot Johnny</button>
       <button class="pill" onclick="filterClick(this,'Prototype')">Prototype</button>
-      <button class="pill" onclick="filterClick(this,'TCC NOLA')">TCC NOLA X</button>
+      <button class="pill" onclick="filterClick(this,'Phantom')">Phantom X</button>
       <button class="pill" onclick="filterClick(this,'Newport')">Newport</button>
     </div>
 
@@ -227,7 +227,7 @@
 
   <!-- POPULAR TAB -->
   <div id="tab-popular" style="display:none">
-    <p style="font-size:14px;color:var(--text2);margin-bottom:1rem;">Click any model to load current market data. Prices are rolling averages from recent eBay sales.</p>
+    <p style="font-size:14px;color:var(--text2);margin-bottom:1rem;">Click any model to pull current sold and active listings from eBay.</p>
     <div class="pop-grid" id="pop-grid"></div>
     <div id="model-detail" style="display:none">
       <div class="section-label" id="model-detail-label">Model details</div>
@@ -236,7 +236,7 @@
   </div>
 
   <footer>
-    <span>Data via eBay Browse API &bull; Prices in USD &bull; Not affiliated with Titleist/Acushnet/Cameron Collector etc... but definitely associated with your mom :)</span>
+    <span>Data via eBay Browse API &bull; Prices in USD &bull; Not affiliated with Titleist/Acushnet</span>
     <a href="https://github.com/colemic2006/sc-headcover-tracker" target="_blank">GitHub</a>
   </footer>
 
@@ -250,18 +250,43 @@ const WORKER_URL = "https://sc-headcover-tracker.YOUR-SUBDOMAIN.workers.dev";
 // ============================================================
 
 const MODELS = [
-  { name: "Circle T",        query: "Circle T",          avgPrice: 285, note: "Tour-issued, highly collectible" },
-  { name: "Ltd Release",     query: "Ltd Release",       avgPrice: 175, note: "Gallery & limited runs" },
-  { name: "Event",  query: "Event",    avgPrice:  95, note: "Current production line" },
-  { name: "Tour Only",       query: "Tour Only",         avgPrice: 420, note: "Not sold at retail" },
-  { name: "TCC NOLA",     query: "TCC NOLA",       avgPrice: 145, note: "Annual event exclusives" },
-  { name: "Jackpot Johnny",  query: "Jackpot Johnny",    avgPrice: 320, note: "Beloved mascot series" },
-  { name: "The Cameron Collector",       query: "The Cameron Collector",         avgPrice:  65, note: "High-volume, steady demand" },
-  { name: "Newport / Newport 2", query: "Newport headcover", avgPrice: 72, note: "Classic blade cover" },
-  { name: "Japan Gallery",          query: "Japan Gallery",  avgPrice:  58, note: "Mallet style" },
-  { name: "Prototype",       query: "Prototype",         avgPrice: 490, note: "Rare tour prototypes" },
-  { name: "Gallery Release", query: "Gallery",           avgPrice: 210, note: "Gallery-only drops" },
-  { name: "Cameron & Crown", query: "Cameron Crown",     avgPrice: 135, note: "Sub-brand headcovers" },
+  { name: "Circle T",              query: "Circle T"              },
+  { name: "Limited",               query: "Limited"               },
+  { name: "TCC",                   query: "TCC"                   },
+  { name: "TCC NOLA",              query: "TCC NOLA"              },
+  { name: "New Orleans",           query: "New Orleans"           },
+  { name: "Mardi Gras",            query: "Mardi Gras"            },
+  { name: "The Cameron Collector", query: "Cameron Collector"     },
+  { name: "TCC Texas",             query: "TCC Texas"             },
+  { name: "Hula",                  query: "Hula"                  },
+  { name: "Canada",                query: "Canada"                },
+  { name: "Canadian",              query: "Canadian"              },
+  { name: "Hawaii",                query: "Hawaii"                },
+  { name: "NASA",                  query: "NASA"                  },
+  { name: "Studio Design",         query: "Studio Design"         },
+  { name: "Pro Platinum",          query: "Pro Platinum"          },
+  { name: "Scott Cameron",         query: "Scott Cameron"         },
+  { name: "Copper",                query: "Copper"                },
+  { name: "Masters",               query: "Masters"               },
+  { name: "Beatles",               query: "Beatles"               },
+  { name: "Dinosaur",              query: "Dinosaur"              },
+  { name: "The Clint",             query: "The Clint"             },
+  { name: "Milspec 33/350",        query: "Milspec"               },
+  { name: "Jack the Donkey",       query: "Jack the Donkey"       },
+  { name: "40 Miles from Mexico",  query: "40 Miles from Mexico"  },
+  { name: "Gallery",               query: "Gallery"               },
+  { name: "Bicycle",               query: "Bicycle"               },
+  { name: "72 and Sunny",          query: "72 and Sunny"          },
+  { name: "Tour Only",             query: "Tour Only"             },
+  { name: "Event",                 query: "Event"                 },
+  { name: "Jackpot Johnny",        query: "Jackpot Johnny"        },
+  { name: "St. Patrick's Day",     query: "St Patricks Day"       },
+  { name: "Valentine's Day",       query: "Valentines Day"        },
+  { name: "Christmas",             query: "Christmas"             },
+  { name: "Halloween",             query: "Halloween"             },
+  { name: "Japan Gallery",         query: "Japan Gallery"         },
+  { name: "Prototype",             query: "Prototype"             },
+  { name: "Gallery Release",       query: "Gallery Release"       },
 ];
 
 let currentTab = "market";
@@ -408,8 +433,6 @@ function renderPopular() {
   document.getElementById("pop-grid").innerHTML = MODELS.map((m, i) =>
     `<div class="pop-card" onclick="loadModel(${i})">
       <div class="pop-name">${m.name}</div>
-      <div class="pop-price">~${fmt(m.avgPrice)}</div>
-      <div class="pop-meta">${m.note}</div>
     </div>`
   ).join("");
 }
